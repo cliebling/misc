@@ -3,6 +3,11 @@
 #include <stack>
 #include <queue>
 
+/*
+ * Implementation of the "shunting yard" algorithm
+ * Author: C. Liebling
+ * 2022-05-06
+ */
 
 bool isNumOrPoint(char c)
 {
@@ -27,6 +32,7 @@ bool isOperator(char c)
 		case '-':
 		case '*':
 		case '/':
+		case '^':
 		case '(':
 		case ')':
 			return true;
@@ -37,6 +43,46 @@ bool isOperator(char c)
 	}
 }
 
+char precedent(char op)
+{
+	switch(op)
+	{
+		case '+':
+		case '-':
+			return 1;
+			break;
+		case '*':
+		case '/':
+			return 2;
+			break;
+		case '^':
+			return 3;
+		default:
+			return 0;
+			break;
+	}
+
+}
+
+bool isLeftAssociative(char op)
+{
+	switch(op)
+	{
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+			return true;
+			break;
+		case '^':
+			return false;
+			break;
+		default:
+			return true;
+			break;
+	}
+
+}
 
 std::string infix2postfix(std::string infix)
 {
@@ -46,14 +92,85 @@ std::string infix2postfix(std::string infix)
 	std::string tmpNumber;
 	std::string tmpOperator;
 	std::string postfix;
+	std::string stackTop;
 	tmpNumber = "";
 	for(i = 0; i < infix.length(); i++)
 	{
 		if(isOperator(infix[i]))
 		{
-			tmpOperator = infix[i];
-			opstack.push(tmpOperator);
-			tmpOperator = "";
+			if(infix[i] == '(')
+			{
+				tmpOperator = infix[i];
+				opstack.push(tmpOperator);
+				tmpOperator = "";
+			}
+			else if(infix[i] == ')')
+			{
+				if(opstack.empty())
+				{
+					/* unbalanced parenthesis */
+					break;
+				}
+				stackTop = opstack.top();
+				while(stackTop[0] != '(')
+				{
+					output.push(opstack.top());
+					opstack.pop();
+					stackTop = opstack.top();
+				}
+				opstack.pop();
+			}
+			else
+			{
+				if(opstack.empty())
+				{
+					tmpOperator = infix[i];
+					opstack.push(tmpOperator);
+					tmpOperator = "";
+				}
+				else
+				{
+					stackTop = opstack.top(); 
+					if(opstack.empty())
+					{
+						tmpOperator = infix[i];
+						opstack.push(tmpOperator);
+						tmpOperator = "";
+					}
+					else if((precedent(infix[i]) > precedent(stackTop[0]))
+						|| ((precedent(infix[i]) ==  precedent(stackTop[0]))
+						&&  !isLeftAssociative(stackTop[0] )))
+					{
+						tmpOperator = infix[i];
+						opstack.push(tmpOperator);
+						tmpOperator = "";
+					}
+					else if((precedent(infix[i]) < precedent(stackTop[0]))
+						|| ((precedent(infix[i]) == precedent(stackTop[0]))
+						&& isLeftAssociative(stackTop[0])))
+					{
+						while((precedent(infix[i]) <= precedent(stackTop[0]))
+						|| ((precedent(infix[i]) == precedent(stackTop[0]))
+						&& isLeftAssociative(stackTop[0])))
+						{
+							if(opstack.empty())
+							{
+								break;
+							}
+							output.push(opstack.top());
+							opstack.pop();
+							if(opstack.empty())
+							{
+								break;
+							}
+							stackTop = opstack.top();
+						}
+						tmpOperator = infix[i];
+						opstack.push(tmpOperator);
+						tmpOperator = "";
+					}
+				}
+			}
 		}
 		if(isNumOrPoint(infix[i]))
 		{
