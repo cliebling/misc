@@ -2,13 +2,17 @@
 #include <string>
 #include <stack>
 #include <queue>
-
+#include <cmath>
 /*
  * Implementation of the "shunting yard" algorithm
  * Author: C. Liebling
  * 2022-05-06
  */
 
+/*
+ * Function: isNumOrPoint
+ * Checks if a character is 0-9 or .
+ */
 bool isNumOrPoint(char c)
 {
 	if((c >= '0') && (c <= '9'))
@@ -25,6 +29,9 @@ bool isNumOrPoint(char c)
 	}
 }
 
+/* Function: isOperator
+ * Checks if a character is an arithmetic operator
+ */
 bool isOperator(char c)
 {
 	switch(c) {
@@ -43,6 +50,9 @@ bool isOperator(char c)
 	}
 }
 
+/* Function: precedent
+ * Allows the comparison of operator precedent
+ */
 char precedent(char op)
 {
 	switch(op)
@@ -64,6 +74,10 @@ char precedent(char op)
 
 }
 
+/* 
+ * Function: isLeftAssociative
+ * Checks if an arithmetic operator is left associative
+ */
 bool isLeftAssociative(char op)
 {
 	switch(op)
@@ -83,6 +97,17 @@ bool isLeftAssociative(char op)
 	}
 
 }
+
+/*
+ * Function: infix2postfix
+ * Argument(s):
+ * std::string infix: A string representing an infix
+ * arithmetic expression consisting of integer 
+ * or floating point numbers and the operators
+ * +, -, *, /, and ^
+ * Returns:
+ * A string showing the expression in postfix
+ */
 
 std::string infix2postfix(std::string infix)
 {
@@ -152,7 +177,7 @@ std::string infix2postfix(std::string infix)
 						while((precedent(infix[i]) <= precedent(stackTop[0]))
 						|| ((precedent(infix[i]) == precedent(stackTop[0]))
 						&& isLeftAssociative(stackTop[0])))
-						{
+						{	/* No operators left? */
 							if(opstack.empty())
 							{
 								break;
@@ -174,6 +199,7 @@ std::string infix2postfix(std::string infix)
 		}
 		if(isNumOrPoint(infix[i]))
 		{
+			/* Process numbers */
 			while(isNumOrPoint(infix[i]))
 			{
 				tmpNumber += infix[i];
@@ -190,6 +216,7 @@ std::string infix2postfix(std::string infix)
 	}
 	while(!output.empty())
 	{
+		/* build result string */
 		postfix += output.front();
 		output.pop();
 		postfix += " ";
@@ -197,10 +224,71 @@ std::string infix2postfix(std::string infix)
 	return postfix;
 }
 
+float operate(float a, float b, char op)
+{
+	switch(op) {
+		case '+':
+			return a + b;
+			break;
+		case '-':
+			return a - b;
+			break;
+		case '*':
+			return a * b;
+			break;
+		case '/':
+			return a / b;
+			break;
+		case '^':
+			return pow(a, b);
+			break;
+		default:
+			return a;
+	}
+}
+
+/* Function: postfixEvaluator
+ * Evaluates a postfix formatted string
+ * Supports floating point
+ */
+float postfixEvaluator(std::string postfix)
+{
+	std::stack<float> operands;
+	std::string tmpNumber;
+	float opA;
+	float opB;
+	float result;
+	result = 0.0f;
+	for(int i = 0; i < postfix.length(); i++)
+	{
+		if(isNumOrPoint(postfix[i]))
+		{
+			while(isNumOrPoint(postfix[i]))
+			{
+				tmpNumber += postfix[i];
+				i++;
+			}
+			operands.push(std::stof(tmpNumber, NULL));
+			tmpNumber = "";
+		}
+		else if(isOperator(postfix[i]))
+		{
+			opB = operands.top();
+			operands.pop();
+			opA = operands.top();
+			operands.pop();
+			operands.push(operate(opA, opB, postfix[i]));
+		}
+	}
+	result = operands.top();
+	return result;
+}
+
 int main(void)
 {
 	std::string infix;
 	std::getline(std::cin, infix);
 	std::cout<<infix2postfix(infix)<<std::endl;
+	std::cout<<"Evaluates to: "<<postfixEvaluator(infix2postfix(infix))<<std::endl;
 	return 0;
 }
