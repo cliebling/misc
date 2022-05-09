@@ -3,17 +3,50 @@
 #include <stack>
 #include <queue>
 #include <cmath>
+#include <string.h>
+#include "shunt.h"
+
 /*
  * Implementation of the "shunting yard" algorithm
  * Author: C. Liebling
  * 2022-05-06
+ *
+ *
+ * This implements the "shunting yard" algorithm for:
+ * Addition
+ * Subtraction
+ * Multiplication
+ * Division
+ * Exponentiation
+ * of:
+ * Integers and floating point, with the result presented
+ * as a single-precision floating point value.
+ *
+ * It is a relatively naive algorithm and does not handle
+ * anything exotic. This is a product of time constraints.
+ *
+ * Formatting may contain spaces or not, e.g.
+ * 3 + 6 / 7
+ * 3+6/7
+ * ( 3 + 7 ) ^ 2.5
+ * (3+7)^2.5
+ *
+ * Known issues:
+ * 1. This implementation does not handle unary negation,
+ * i.e. "-6 + 3" does not work.
+ * 2. Floating point numbers work, but they are limited to
+ * single precision.
+ * 3. Incorrectly formatted numbers will cause problems, e.g.
+ * 123.456.789 or 123a2.4 (the latter will become two numbers,
+ * 123 and 2.4 without an operator
+ *
  */
 
 /*
  * Function: isNumOrPoint
  * Checks if a character is 0-9 or .
  */
-bool isNumOrPoint(char c)
+static bool isNumOrPoint(char c)
 {
 	if((c >= '0') && (c <= '9'))
 	{
@@ -53,7 +86,7 @@ bool isOperator(char c)
 /* Function: precedent
  * Allows the comparison of operator precedent
  */
-char precedent(char op)
+static char precedent(char op)
 {
 	switch(op)
 	{
@@ -78,7 +111,7 @@ char precedent(char op)
  * Function: isLeftAssociative
  * Checks if an arithmetic operator is left associative
  */
-bool isLeftAssociative(char op)
+static bool isLeftAssociative(char op)
 {
 	switch(op)
 	{
@@ -224,7 +257,7 @@ std::string infix2postfix(std::string infix)
 	return postfix;
 }
 
-float operate(float a, float b, char op)
+static float operate(float a, float b, char op)
 {
 	switch(op) {
 		case '+':
@@ -269,7 +302,7 @@ float postfixEvaluator(std::string postfix)
 				i++;
 			}
 			operands.push(std::stof(tmpNumber, NULL));
-			tmpNumber = "";
+			tmpNumber.clear();
 		}
 		else if(isOperator(postfix[i]))
 		{
@@ -284,6 +317,33 @@ float postfixEvaluator(std::string postfix)
 	return result;
 }
 
+
+extern "C" float c_postfixEvaluator(char *postfix)
+{
+    std::string postfixString(postfix);
+    return postfixEvaluator(postfixString);
+}
+
+
+extern "C" int c_infix2postfix(char *infix, char *postfix, size_t buffer_length)
+{
+    if((infix == NULL) || (postfix == NULL))
+    {
+        return -1;
+    }
+    std::string infixString(infix);
+    std::string postfixString;
+    if(infixString.length() > MAX_BUFFER_LENGTH)
+    {
+        return -1;
+    }
+    postfixString = infix2postfix(infixString);
+    strncpy(postfix, postfixString.c_str(), MAX_BUFFER_LENGTH);
+    return 0;
+}
+
+
+/*
 int main(void)
 {
 	std::string infix;
@@ -292,3 +352,4 @@ int main(void)
 	std::cout<<"Evaluates to: "<<postfixEvaluator(infix2postfix(infix))<<std::endl;
 	return 0;
 }
+*/
