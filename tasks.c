@@ -1,8 +1,43 @@
 
+/*
+    C. Liebling
+    2022-05-08
+
+    About this code snippet:
+    This code demonstrates how I would go about constructing
+    the requested task of:
+    1. Read data in on the serial port representing an infix arithmetic expression
+    2. Process the infix expression using an implementation of the shunting yard
+    algorithm
+    3. Send the postfix expression back to the user over the serial port
+    4. Optionally allow the user to evaluate the last expression
+
+Issues:
+    This depends on some hypothetical functions, namely those to:
+    1. Configure the UART
+    2. Send data to the UART
+    3. Receive data from the UART
+
+    The code is somewhat brittle, as there is not robust error checking or
+    input processing. Poorly formed input will cause problems.
+
+    I simply do not have time to actually instantiate this code inside FreeRTOS
+    built on Windows. I am moving house and that is occupying a tremendous amount
+    of my time, hence this solution not being executable. It does, however, demonstrate
+    that I understand some of the built in constucts in FreeRTOS, namely queues and
+    tasks, both of which are used extensively in any RTOS. Also note that I have
+    never used FreeRTOS before, so this is all completely new to me and I am sure
+    there are probably steps I missed between initializing and runnint the tasks.
+
+    That said, it covers the basics.
+*/
+
+
 #define MAX_BUFFER_LEN 255U
 #define MAX_QUEUE_LEN 8
 #define STACK_DEPTH 512
 
+/* Hypothetical UART handle type */
 static UARTInstance_t uart_instance;
 
 static QueueHandle_t rx_queue;
