@@ -95,40 +95,40 @@ int32_t convolve2d(SDL_Surface *src,
 
 int main(int argc, char **argv)
 {       
-    uint32_t i;
-    int32_t error;
-    int32_t width, height, tmpval;
-    int32_t mx, my, mxp, myp;
-    int32_t opt;
-    bool change, quit;
-    SDL_Surface *convolutedImage;
-    SDL_Surface *image;
-	SDL_Texture *imageTex;
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-	std::string fileName;
-	std::vector<uint32_t> frame;
-	std::vector<uint32_t> convolutedFrame;
-	//std::vector<int32_t> kernel = {1, 0, -1, 0, 0, 0, -1, 0, 1};
-	std::vector<int32_t> kernel = {-1, -1, -1, -1, 8, -1, -1, -1, -1};
-	//std::vector<int32_t> kernel = {0, 0, 0, 0, 1, 0, 0, 0, 0};
-    width = WIDTH;
-    height = HEIGHT;
-    while((opt = getopt(argc, argv, "f:")) != -1) {
-    switch (opt) {
-        case 'f':
-            fileName = optarg;
-            break;
-        default:
-            break;
+        uint32_t i;
+        int32_t error;
+        int32_t width, height, tmpval;
+        int32_t mx, my, mxp, myp;
+        int32_t opt;
+        bool change, quit;
+        SDL_Surface *convolutedImage;
+        SDL_Surface *image;
+        SDL_Texture *imageTex;
+        SDL_Window *window;
+        SDL_Renderer *renderer;
+        std::string fileName;
+        std::vector<uint32_t> frame;
+        std::vector<uint32_t> convolutedFrame;
+        std::vector<int32_t> kernel = {1, 0, -1, 0, 0, 0, -1, 0, 1};
+        //std::vector<int32_t> kernel = {-1, -1, -1, -1, 8, -1, -1, -1, -1};
+        //std::vector<int32_t> kernel = {0, 0, 0, 0, 1, 0, 0, 0, 0};
+        width = WIDTH;
+        height = HEIGHT;
+        while((opt = getopt(argc, argv, "f:")) != -1) {
+                switch (opt) {
+                case 'f':
+                        fileName = optarg;
+                        break;
+                default:
+                        break;
+                }
         }
-    }
-    error = SDL_Init(SDL_INIT_VIDEO);
-    if(error != 0){
-        std::cerr<<"Could not initialize video, SDL_Init returned ";
-        std::cerr<<error<<std::endl;
-        return error;
-    }
+        error = SDL_Init(SDL_INIT_VIDEO);
+        if(error != 0){
+                std::cerr<<"Could not initialize video, SDL_Init returned ";
+                std::cerr<<error<<std::endl;
+                return error;
+        }
 	error = IMG_Init(IMG_INIT_PNG);
 	if(error == 0){
 		std::cerr<<"Could not initialize image library.\n";
@@ -137,19 +137,19 @@ int main(int argc, char **argv)
 	}
 	
 	image = IMG_Load(fileName.c_str());
-    error = SDL_CreateWindowAndRenderer(image->w, image->h, SDL_WINDOW_RESIZABLE,
-                                        &window, &renderer);
+        error = SDL_CreateWindowAndRenderer(image->w, image->h, SDL_WINDOW_RESIZABLE,
+                                            &window, &renderer);
 	if(error != 0){
-        std::cerr<<"Error: SDL_CreateWindowAndRenderer returned ";
-        std::cerr<<error<<std::endl;
-        SDL_Quit();
-        return error;
-    }
+                std::cerr<<"Error: SDL_CreateWindowAndRenderer returned ";
+                std::cerr<<error<<std::endl;
+                SDL_Quit();
+                return error;
+        }
 
 	//imageTex = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_RenderClear(renderer);
-    //SDL_RenderCopy(renderer, imageTex, NULL, NULL);
-    //SDL_RenderPresent(renderer);
+        SDL_RenderClear(renderer);
+        //SDL_RenderCopy(renderer, imageTex, NULL, NULL);
+        //SDL_RenderPresent(renderer);
 	quit = false;
 	std::cout<<"Width: "<<image->w<<std::endl;
 	std::cout<<"Height: "<<image->h<<std::endl;
@@ -165,18 +165,18 @@ int main(int argc, char **argv)
 	
 	convolve2d(image, convolutedImage, kernel,3, 3);
 	imageTex = SDL_CreateTextureFromSurface(renderer, convolutedImage);
-    SDL_RenderCopy(renderer, imageTex, NULL, NULL);
+        SDL_RenderCopy(renderer, imageTex, NULL, NULL);
 	SDL_RenderPresent(renderer);
 
-    while(!quit){
-        SDL_PumpEvents();
-        if(SDL_GetMouseState(&mx, &my) & SDL_BUTTON(SDL_BUTTON_LEFT)){
-            quit = true;
-        }                    
-    }
+        while(!quit){
+                SDL_PumpEvents();
+                if(SDL_GetMouseState(&mx, &my) & SDL_BUTTON(SDL_BUTTON_LEFT)){
+                        quit = true;
+                }                    
+        }
 	SDL_FreeSurface(image);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return 0;
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 0;
 }
